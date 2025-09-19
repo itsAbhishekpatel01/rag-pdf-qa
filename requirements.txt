@@ -1,0 +1,9 @@
+langchain
+langchain-community
+langchain-huggingface
+pymongo
+pypdf2
+sentence-transformers
+python-dotenv
+scikit-learn
+numpy
