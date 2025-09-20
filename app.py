@@ -15,13 +15,19 @@ load_dotenv()
 # Fix HuggingFace tokenizer warning
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
-# MongoDB configuration
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/rag-pdf-qa")
-DB_NAME = "rag_pdf_qa"
-COLLECTION_NAME = "documents"
-
-# Groq API Key from environment
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+# MongoDB configuration - supports both local .env and Streamlit Cloud secrets
+try:
+    # Try Streamlit secrets first (for production)
+    MONGO_URI = st.secrets.get("MONGO_URI", os.getenv("MONGO_URI", "mongodb://localhost:27017/rag-pdf-qa"))
+    DB_NAME = st.secrets.get("DB_NAME", os.getenv("DB_NAME", "rag_pdf_qa"))
+    COLLECTION_NAME = st.secrets.get("COLLECTION_NAME", os.getenv("COLLECTION_NAME", "documents"))
+    GROQ_API_KEY = st.secrets.get("GROQ_API_KEY", os.getenv("GROQ_API_KEY", ""))
+except:
+    # Fallback to environment variables
+    MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/rag-pdf-qa")
+    DB_NAME = os.getenv("DB_NAME", "rag_pdf_qa")
+    COLLECTION_NAME = os.getenv("COLLECTION_NAME", "documents")
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 
 # Page configuration
 st.set_page_config(
