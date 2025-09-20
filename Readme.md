@@ -10,7 +10,6 @@ A modern Retrieval-Augmented Generation (RAG) system with a beautiful Streamlit 
 - 🔍 **Semantic Search**: Advanced vector similarity search using HuggingFace embeddings
 - 🤖 **Groq LLM**: Fast, high-quality responses with Llama 3.1-8b-instant
 - 🗄️ **MongoDB Storage**: Scalable document and vector storage
-- 🔐 **Authentication**: Secure access control for document management
 - ⚙️ **Configurable**: Customizable chunk sizes, collections, and retrieval parameters
 
 ## 🚀 Quick Start
@@ -42,8 +41,6 @@ COLLECTION_NAME=documents
 # Groq API Key (get from https://console.groq.com/)
 GROQ_API_KEY=your_groq_api_key_here
 
-# Admin Password (for document upload access)
-ADMIN_PASSWORD=your_secure_password
 ```
 
 ### 3. Start MongoDB
@@ -79,7 +76,6 @@ Open your browser to `http://localhost:8501` and start chatting with your PDFs!
 1. **Upload Documents**: Use the file uploader to add PDF documents
 2. **Chat Interface**: Ask questions about your uploaded documents
 3. **Configuration**: Adjust settings in the sidebar (chunk size, collection, etc.)
-4. **Authentication**: Use admin password to access document upload features
 
 ### Command Line Interface
 
@@ -117,7 +113,6 @@ python query.py "What is this document about?" --collection documents --k 4
 | `DB_NAME` | Database name | `rag_pdf_qa` |
 | `COLLECTION_NAME` | Collection name | `documents` |
 | `GROQ_API_KEY` | Groq API key for LLM | Required |
-| `ADMIN_PASSWORD` | Password for admin access | `admin123` |
 
 ### Model Configuration
 
@@ -137,7 +132,6 @@ python query.py "What is this document about?" --collection documents --k 4
    ```
    MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/
    GROQ_API_KEY=your_groq_key
-   ADMIN_PASSWORD=your_secure_password
    ```
 
 ### Local Production
