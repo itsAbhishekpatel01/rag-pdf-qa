@@ -1,196 +1,230 @@
-# RAG PDF QA System with MongoDB
+# RAG PDF QA System
 
-A Retrieval-Augmented Generation (RAG) system that allows you to ask questions about PDF documents using MongoDB for vector storage and HuggingFace embeddings.
+A modern Retrieval-Augmented Generation (RAG) system with a beautiful Streamlit UI that allows you to chat with your PDF documents using MongoDB for storage, HuggingFace embeddings for retrieval, and Groq LLM for generation.
 
-## Features
+## ✨ Features
 
-- 📄 **PDF Processing**: Extract text from PDF documents
-- 🔍 **Vector Search**: Semantic similarity search using HuggingFace embeddings
-- 🗄️ **MongoDB Storage**: Scalable document storage with vector embeddings
-- 🤖 **Local AI**: No external API keys required
-- 🎯 **Clean Output**: Pure answers without extra formatting
+- 🎨 **Beautiful Streamlit UI**: Modern, responsive web interface
+- 📄 **PDF Upload & Processing**: Drag-and-drop PDF upload with automatic processing
+- 💬 **Interactive Chat**: Real-time conversation with your documents
+- 🔍 **Semantic Search**: Advanced vector similarity search using HuggingFace embeddings
+- 🤖 **Groq LLM**: Fast, high-quality responses with Llama 3.1-8b-instant
+- 🗄️ **MongoDB Storage**: Scalable document and vector storage
+- 🔐 **Authentication**: Secure access control for document management
+- ⚙️ **Configurable**: Customizable chunk sizes, collections, and retrieval parameters
 
-## Prerequisites
+## 🚀 Quick Start
 
-- Python 3.8+
-- MongoDB (local installation)
-- Virtual environment (recommended)
-
-## Installation
-
-### 1. Clone and Setup Environment
+### 1. Setup Environment
 
 ```bash
-# Navigate to project directory
+# Clone and navigate to project
 cd rag-pdf-qa
 
 # Create virtual environment
 python -m venv venv
-
-# Activate virtual environment
-# On macOS/Linux:
-source venv/bin/activate
-# On Windows:
-# venv\Scripts\activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
 ```
 
-### 2. Install and Start MongoDB
+### 2. Configure Environment
 
-#### macOS (using Homebrew):
+Create a `.env` file in the project root:
+
 ```bash
-# Install MongoDB
+# MongoDB Configuration
+MONGO_URI=mongodb://localhost:27017/rag-pdf-qa
+DB_NAME=rag_pdf_qa
+COLLECTION_NAME=documents
+
+# Groq API Key (get from https://console.groq.com/)
+GROQ_API_KEY=your_groq_api_key_here
+
+# Admin Password (for document upload access)
+ADMIN_PASSWORD=your_secure_password
+```
+
+### 3. Start MongoDB
+
+**macOS (Homebrew):**
+```bash
 brew tap mongodb/brew
 brew install mongodb-community@6.0
-
-# Start MongoDB service
 brew services start mongodb-community@6.0
 ```
 
-#### Ubuntu/Debian:
+**Ubuntu/Debian:**
 ```bash
-# Install MongoDB
 sudo apt-get install mongodb
-
-# Start MongoDB service
 sudo systemctl start mongodb
 ```
 
-#### Windows:
-Download and install MongoDB from [mongodb.com](https://www.mongodb.com/try/download/community)
+**Windows:** Download from [mongodb.com](https://www.mongodb.com/try/download/community)
 
-## Usage
-
-### 1. Ingest PDF Documents
+### 4. Run the Application
 
 ```bash
-# Activate virtual environment
-source venv/bin/activate
+# Start the Streamlit app
+streamlit run app.py
+```
 
-# Ingest a PDF into MongoDB
+Open your browser to `http://localhost:8501` and start chatting with your PDFs!
+
+## 📖 Usage
+
+### Web Interface (Recommended)
+
+1. **Upload Documents**: Use the file uploader to add PDF documents
+2. **Chat Interface**: Ask questions about your uploaded documents
+3. **Configuration**: Adjust settings in the sidebar (chunk size, collection, etc.)
+4. **Authentication**: Use admin password to access document upload features
+
+### Command Line Interface
+
+```bash
+# Ingest PDF documents
 python ingest.py data/your-document.pdf --collection documents
+
+# Query documents
+python query.py "What is this document about?" --collection documents --k 4
 ```
 
-**Parameters:**
-- `data/your-document.pdf`: Path to your PDF file
-- `--collection documents`: MongoDB collection name (optional, defaults to "documents")
+## 🏗️ Architecture
 
-### 2. Query the Knowledge Base
-
-```bash
-# Ask questions about your PDF
-python query.py "What is this document about?" --collection documents
-python query.py "What are the main topics discussed?" --collection documents
-python query.py "What technologies are mentioned?" --collection documents
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Streamlit UI  │────│   MongoDB        │────│   Groq LLM      │
+│   (Frontend)    │    │   (Vector Store) │    │   (Generation)  │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+         │                       │                       │
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   PDF Upload    │    │   HuggingFace    │    │   Chat Interface │
+│   & Processing  │    │   Embeddings    │    │   & Responses    │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
 ```
 
-**Parameters:**
-- `"Your question here"`: The question you want to ask
-- `--collection documents`: MongoDB collection name (optional, defaults to "documents")
-- `--k 4`: Number of chunks to retrieve (optional, defaults to 4)
+## ⚙️ Configuration
 
-## Example Workflow
+### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `MONGO_URI` | MongoDB connection string | `mongodb://localhost:27017/rag-pdf-qa` |
+| `DB_NAME` | Database name | `rag_pdf_qa` |
+| `COLLECTION_NAME` | Collection name | `documents` |
+| `GROQ_API_KEY` | Groq API key for LLM | Required |
+| `ADMIN_PASSWORD` | Password for admin access | `admin123` |
+
+### Model Configuration
+
+- **Embeddings**: `sentence-transformers/all-MiniLM-L6-v2`
+- **LLM**: `llama-3.1-8b-instant` (Groq)
+- **Chunk Size**: 800 characters (configurable)
+- **Chunk Overlap**: 120 characters
+- **Retrieval**: Top 4 most similar chunks
+
+## 🚀 Deployment
+
+### Streamlit Cloud
+
+1. Push your code to GitHub
+2. Connect your GitHub repo to [Streamlit Cloud](https://share.streamlit.io/)
+3. Add secrets in Streamlit Cloud dashboard:
+   ```
+   MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/
+   GROQ_API_KEY=your_groq_key
+   ADMIN_PASSWORD=your_secure_password
+   ```
+
+### Local Production
 
 ```bash
-# 1. Activate environment
-source venv/bin/activate
+# Install production dependencies
+pip install -r requirements.txt
 
-# 2. Make sure MongoDB is running
+# Run with production settings
+streamlit run app.py --server.port 8501 --server.address 0.0.0.0
+```
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**MongoDB Connection Failed:**
+```bash
+# Check MongoDB status
 brew services list | grep mongodb
-
-# 3. Ingest your PDF
-python ingest.py data/resume.pdf --collection documents
-
-# 4. Query the document
-python query.py "What is this document about?" --collection documents
+# Start if needed
+brew services start mongodb-community@6.0
 ```
 
-## Project Structure
+**Groq API Key Missing:**
+- Get API key from [console.groq.com](https://console.groq.com/)
+- Add to `.env` file or Streamlit secrets
+
+**Memory Issues:**
+- Reduce chunk size in `ingest.py`
+- Use fewer retrieved chunks (`--k` parameter)
+- Ensure sufficient RAM for embeddings
+
+**Import Errors:**
+```bash
+# Reinstall dependencies
+pip install -r requirements.txt
+```
+
+## 📁 Project Structure
 
 ```
 rag-pdf-qa/
-├── data/
-│   └── rag.pdf                 # Your PDF documents
-├── ingest.py                   # MongoDB ingestion script
-├── query.py                    # MongoDB query script
-├── requirements.txt            # Python dependencies
-├── README.md                   # This file
-└── venv/                      # Virtual environment
+├── app.py                 # Streamlit web application
+├── ingest.py              # PDF ingestion script
+├── query.py               # Command-line query script
+├── requirements.txt       # Python dependencies
+├── .env                   # Environment variables (local)
+├── .streamlit/
+│   └── secrets.toml       # Streamlit secrets (production)
+├── data/                  # PDF documents
+└── venv/                  # Virtual environment
 ```
 
-## Configuration
+## 🛠️ Development
 
-### MongoDB Connection
-The system uses the following MongoDB configuration:
-- **URI**: `mongodb://localhost:27017/rag-pdf-qa`
-- **Database**: `rag_pdf_qa`
-- **Collection**: `documents` (configurable)
+### Adding New Features
 
-### Embeddings Model
-- **Model**: `sentence-transformers/all-MiniLM-L6-v2`
-- **Type**: HuggingFace embeddings (local, no API key required)
+1. **New Embedding Models**: Update `HuggingFaceEmbeddings` model name
+2. **Different LLMs**: Replace `ChatGroq` with other LangChain LLMs
+3. **Custom UI**: Modify Streamlit components in `app.py`
+4. **Database Changes**: Update MongoDB schema in `ingest.py`
 
-## Troubleshooting
+### Testing
 
-### MongoDB Connection Issues
 ```bash
-# Check if MongoDB is running
-brew services list | grep mongodb
+# Test MongoDB connection
+python -c "from pymongo import MongoClient; print(MongoClient().admin.command('ping'))"
 
-# Start MongoDB if not running
-brew services start mongodb-community@6.0
-
-# Check MongoDB status
-mongosh --eval "db.runCommand('ping')"
+# Test Groq API
+python -c "from langchain_groq import ChatGroq; print(ChatGroq().invoke('Hello'))"
 ```
 
-### Python Dependencies
-```bash
-# If you get import errors, reinstall dependencies
-pip install -r requirements.txt
+## 📚 Dependencies
 
-# For HuggingFace models, ensure you have enough disk space
-# Models are downloaded on first use (~400MB)
-```
+- **Core**: `streamlit`, `langchain`, `langchain-groq`
+- **Database**: `pymongo`
+- **Embeddings**: `langchain-huggingface`, `sentence-transformers`
+- **ML**: `scikit-learn`, `numpy`
+- **PDF**: `pypdf2`
+- **Utils**: `python-dotenv`
 
-### Memory Issues
-- Reduce chunk size in `ingest.py` (currently 800 characters)
-- Use fewer retrieved chunks with `--k` parameter
-- Ensure sufficient RAM for embedding generation
+## 📄 License
 
-## Advanced Usage
+MIT License - feel free to use this project for your own applications!
 
-### Multiple Collections
-```bash
-# Store different documents in separate collections
-python ingest.py data/document1.pdf --collection tech_docs
-python ingest.py data/document2.pdf --collection legal_docs
+---
 
-# Query specific collections
-python query.py "What are the technical requirements?" --collection tech_docs
-```
+**Built with ❤️ using Streamlit, MongoDB, HuggingFace, and Groq**
 
-### Custom Chunk Size
-Edit `ingest.py` to modify chunk parameters:
-```python
-text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=1000,      # Increase for larger chunks
-    chunk_overlap=150     # Increase for more overlap
-)
-```
-
-## Dependencies
-
-- `langchain` - RAG framework
-- `langchain-community` - Community integrations
-- `langchain-huggingface` - HuggingFace embeddings
-- `pymongo` - MongoDB driver
-- `sentence-transformers` - Embedding models
-- `scikit-learn` - Similarity calculations
-- `pypdf2` - PDF processing
-
-## License
-
-This project is open source and available under the MIT License.
