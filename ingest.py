@@ -1,13 +1,20 @@
-# ingest_mongo_final.py - Final MongoDB implementation
+# ingest.py - MongoDB implementation
 import os
 import argparse
+from dotenv import load_dotenv
 from pymongo import MongoClient
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 
+# Load environment variables
+load_dotenv()
+
+# Fix HuggingFace tokenizer warning
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
 # MongoDB configuration
-MONGO_URI = "mongodb://localhost:27017/rag-pdf-qa"
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/rag-pdf-qa")
 DB_NAME = "rag_pdf_qa"
 COLLECTION_NAME = "documents"
 

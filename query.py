@@ -1,20 +1,34 @@
-# query_mongo_final.py - Final MongoDB querying
+# query.py - Groq LLM-powered RAG querying
 import argparse
-import numpy as np
+import os
+from dotenv import load_dotenv
 from pymongo import MongoClient
 from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_groq import ChatGroq
 from sklearn.metrics.pairwise import cosine_similarity
 
+# Load environment variables
+load_dotenv()
+
+# Fix HuggingFace tokenizer warning
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
 # MongoDB configuration
-MONGO_URI = "mongodb://localhost:27017/rag-pdf-qa"
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/rag-pdf-qa")
 DB_NAME = "rag_pdf_qa"
 COLLECTION_NAME = "documents"
 
+# Groq API Key from environment
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+
 def answer_question(question: str, collection_name="documents", k: int = 4):
     """
-    Answer question using MongoDB with cosine similarity
+    Answer question using Groq LLM with MongoDB retrieval
     """
     try:
+        # Set Groq API key
+        os.environ["GROQ_API_KEY"] = GROQ_API_KEY
+        
         # Load embeddings model
         embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
         
@@ -51,33 +65,34 @@ def answer_question(question: str, collection_name="documents", k: int = 4):
             return
         
         # Combine content from retrieved documents
-        combined_content = ""
+        context = ""
         for similarity, doc in top_docs:
-            content = doc.get('page_content', '').strip().replace("\n", " ")
-            combined_content += content + " "
+            content = doc.get('page_content', '').strip()
+            context += content + "\n\n"
         
-        combined_content = combined_content.strip()
+        # Initialize Groq LLM
+        llm = ChatGroq(
+            model_name="llama-3.1-8b-instant",
+            temperature=0.1,
+            max_tokens=1000
+        )
         
-        # Provide clean answer based on question type
-        if "what is this document about" in question.lower() or "what is the document about" in question.lower():
-            print("This document is a comprehensive RAG (Retrieval-Augmented Generation) project planning guide that outlines 4 different levels of project complexity, from beginner mini-projects to advanced portfolio-worthy applications. It includes specific project ideas, technology stacks, and LinkedIn post suggestions for showcasing RAG projects.")
+        # Create prompt with context
+        prompt = f"""Based on the following context from the document, please answer the question.
+
+Context:
+{context}
+
+Question: {question}
+
+Please provide a clear and comprehensive answer based on the context above. If the context doesn't contain enough information to answer the question, please say so."""
+
+        # Get answer from Groq
+        response = llm.invoke(prompt)
         
-        elif "project" in question.lower() and "level" in question.lower():
-            print("The document outlines 4 project levels: Level 1 (Mini RAG Project - 1-2 days), Level 2 (Medium Project - 1-2 weeks), Level 3 (Advanced Project - 1 month), and Level 4 (Portfolio-worthy Project - 1-2 months).")
+        # Print clean answer
+        print(response.content)
         
-        elif "technology" in question.lower() or "stack" in question.lower():
-            print("The document mentions various technologies including LangChain, FAISS, OpenAI API, Llama 3, Streamlit, Gradio, Hugging Face Spaces, Weaviate, Pinecone, and RAG 2.")
-        
-        elif "linkedin" in question.lower() or "post" in question.lower():
-            print("The document includes LinkedIn post ideas for showcasing RAG projects, with specific suggestions for each project level to help build a professional portfolio.")
-        
-        else:
-            # Generic answer based on content
-            if len(combined_content) > 200:
-                print(combined_content[:200] + "...")
-            else:
-                print(combined_content)
-                
     except Exception as e:
         print(f"Error: {e}")
         print("Make sure MongoDB is running and the collection exists.")

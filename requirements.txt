@@ -1,6 +1,7 @@
 langchain
 langchain-community
-langchain-huggingface
+langchain-groq
+groq
 pymongo
 pypdf2
 sentence-transformers
